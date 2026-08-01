@@ -327,11 +327,21 @@ Context:
 
 
 def format_docs(docs):
-    context = "\n\n".join(doc.page_content for doc in docs)
+    formatted = []
 
-    
+    for doc in docs:
+        formatted.append(
+            f"""
+Source Type: {doc.metadata.get("type", "Unknown")}
+Title: {doc.metadata.get("title", "Unknown")}
+Source: {doc.metadata.get("source", "")}
 
-    return context
+Content:
+{doc.page_content}
+"""
+        )
+
+    return "\n\n-----------------\n\n".join(formatted)
 
 def debug_prompt(prompt_value):
 

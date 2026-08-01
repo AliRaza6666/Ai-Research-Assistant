@@ -2,9 +2,10 @@ import os
 from urllib.parse import urlparse, parse_qs
 
 from dotenv import load_dotenv
+from fastapi import HTTPException
 from groq import Groq
 from langdetect import detect
-from youtube_transcript_api import YouTubeTranscriptApi
+from youtube_transcript_api import NoTranscriptFound, TranscriptsDisabled, VideoUnavailable, YouTubeTranscriptApi
 from langchain_core.documents import Document
 
 load_dotenv()
@@ -37,31 +38,60 @@ def extract_video_id(url):
 # ----------------------------------------
 
 def get_any_transcript(video_id):
+    try:
+        api = YouTubeTranscriptApi()
 
-    api = YouTubeTranscriptApi()
+        transcript_list = api.list(video_id)
+        available = list(transcript_list)
 
-    transcript_list = api.list(video_id)
+        if not available:
+            raise HTTPException(
+                status_code=400,
+                detail="This YouTube video does not have any available transcripts."
+            )
 
-    available = list(transcript_list)
+        print("\nAvailable transcripts:")
 
-    if not available:
-        raise Exception("No transcripts available")
+        for t in available:
+            print(f"- {t.language_code} ({t.language})")
 
-    print("\nAvailable transcripts:")
+        transcript = available[0]
 
-    for t in available:
-        print(f"- {t.language_code} ({t.language})")
+        print(f"\nUsing transcript: {transcript.language}")
 
-    transcript = available[0]
+        data = transcript.fetch()
 
-    print(f"\nUsing transcript: {transcript.language}")
+        text = " ".join(item.text for item in data)
 
-    data = transcript.fetch()
+        return text
 
-    text = " ".join(item.text for item in data)
+    except NoTranscriptFound:
+        raise HTTPException(
+            status_code=400,
+            detail="No transcript is available for this YouTube video."
+        )
 
-    return text
+    except TranscriptsDisabled:
+        raise HTTPException(
+            status_code=400,
+            detail="Transcripts are disabled for this YouTube video."
+        )
 
+    except VideoUnavailable:
+        raise HTTPException(
+            status_code=404,
+            detail="This YouTube video is unavailable or does not exist."
+        )
+
+    except HTTPException:
+        # Re-raise HTTP exceptions unchanged
+        raise
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to retrieve transcript: {str(e)}"
+        )
 
 # ----------------------------------------
 # Translate to English

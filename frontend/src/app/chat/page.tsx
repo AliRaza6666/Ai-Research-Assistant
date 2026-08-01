@@ -1,7 +1,8 @@
 "use client";
-import { useEffect } from "react";
+
 import {User} from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import {
   FileText,
   Globe,
@@ -11,6 +12,11 @@ import {
   Loader2,
 } from "lucide-react";
 import { FaYoutube } from "react-icons/fa";
+import {
+  isValidYoutubeUrl,
+  isValidWebsiteUrl,
+  isValidPdf
+} from "@/lib/validators";
 
 
 
@@ -25,6 +31,7 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [input, setInput] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  
   type Message = {
   id: string;
   role: "user" | "assistant";
@@ -37,35 +44,55 @@ export default function ChatPage() {
 
   
 
- async function processYoutubeVedio(){
+  
+async function processYoutubeVedio() {
+    if (!isValidYoutubeUrl(youtubeUrl)) {
+        toast.error("Please enter a valid YouTube video URL.");
+        return;
+    }
+
     setIsProcessing(true);
 
-    const response = await fetch(
-        "http://127.0.0.1:8000/process",
-        {
-            method:"POST",
-            headers:{
-                "Content-Type":"application/json"
-            },
-            body:JSON.stringify({
-                userid: userid,
-                source: youtubeUrl,
-                source_type:"youtube"
-            })
+    try {
+        const response = await fetch(
+            "http://127.0.0.1:8000/process",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    userid: userid,
+                    source: youtubeUrl,
+                    source_type: "youtube",
+                }),
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            toast.error(data.detail || "Failed to process YouTube video.");
+            return;
         }
-    );
-  
 
-    const data = await response.json();
+        console.log(data);
 
-    console.log(data);
+        setSelectedSource(youtubeUrl);
 
-    setSelectedSource(youtubeUrl);
-    setIsProcessing(false);
+    } catch (error) {
+        console.error(error);
+        toast.error("Unable to connect to the backend.");
+    } finally {
+        setIsProcessing(false);
+    }
 }
 
-
 async function processWebsite() {
+     if(!isValidWebsiteUrl(websiteUrl)){
+        toast.error("Please enter a valid website URL.");
+        return;
+     }
      setIsProcessing(true);
 
      const response=await fetch(
@@ -91,6 +118,13 @@ async function processWebsite() {
   }
 
   async function processPdf(file: File) {
+    if (!selectedSource) {
+    toast.error("Please select a PDF file.");
+    return;
+}
+
+
+
   setIsProcessing(true);
 
   setSelectedSource(file.name);  
@@ -118,7 +152,7 @@ async function processWebsite() {
   if (!input.trim()) return;
 
   if (!selectedSource) {
-    alert("Please select a source before asking a question.");
+    toast.error("Please select a source before asking a question.");
     return;
   }
   setInput("");
@@ -150,7 +184,7 @@ async function processWebsite() {
     console.log(data);
 
     if (!response.ok) {
-      alert(data.error || "Something went wrong.");
+      toast.error(data.error || "Something went wrong.");
       return;
     }
 
@@ -168,7 +202,7 @@ async function processWebsite() {
 
   } catch (error) {
     console.error(error);
-    alert("Failed to connect to backend.");
+    toast.error("Failed to connect to backend.");
   }
 }
  
@@ -303,7 +337,7 @@ async function processWebsite() {
     <input
       disabled={isProcessing}
       type="file"
-      accept=".pdf"
+      accept=".pdf,application/pdf"
       onChange={(e) => {
 
         const file = e.target.files?.[0];
@@ -574,6 +608,7 @@ async function processWebsite() {
           
 
             <input
+              disabled={isLoading || isProcessing}
               placeholder="Ask anything..."
               className="flex-1 bg-transparent text-white outline-none placeholder:text-zinc-500"
               value={input}

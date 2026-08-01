@@ -22,9 +22,7 @@ export default function SourceSelector() {
 
   return (
     <section className="border-b border-zinc-800 bg-zinc-950 px-6 py-8">
-      <h3 className="mb-6 text-lg font-semibold text-white">
-        Choose a source
-      </h3>
+     
 
       <div className="grid gap-5 md:grid-cols-3">
         {cards.map((card) => (
