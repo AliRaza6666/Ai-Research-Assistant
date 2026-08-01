@@ -248,7 +248,15 @@ splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
 
 
 #creating a embedding model which we will use along text when storing text and when retreving text
-embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+embedding_model = None
+
+def get_embedding_model():
+    global embedding_model
+    if embedding_model is None:
+        embedding_model = HuggingFaceEmbeddings(
+            model_name="all-MiniLM-L6-v2"
+        )
+    return embedding_model
 
 
 
@@ -262,7 +270,7 @@ def create_vectorstore(source, source_type):
 
     vectorstore = Chroma.from_documents(
         documents=chunks,
-        embedding=embedding_model,
+        embedding=get_embedding_model(),
         client=client,
         collection_name=collection_name
     )
