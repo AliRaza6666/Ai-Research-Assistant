@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from rag_pipeline import process_source, ask_question
+
 from fastapi import UploadFile, File, Form
 
 
@@ -45,6 +45,7 @@ def process_pdf(
     userid: str = Form(...),
     file: UploadFile = File(...)
 ):
+    from rag_pipeline import process_source
 
     chain = process_source(
         file,
@@ -61,10 +62,12 @@ def process_pdf(
 
 @app.post("/process")
 def process(request: SourceRequest):
+    from rag_pipeline import process_source
     chain = process_source(
         request.source,
         request.source_type
     )
+    
     chain_store[request.userid] = chain
 
     
@@ -77,7 +80,7 @@ def process(request: SourceRequest):
 
 @app.post("/ask")
 def ask(request: QuestionRequest):
-
+    from rag_pipeline import ask_question
     chain = chain_store.get(request.userid)
 
 
