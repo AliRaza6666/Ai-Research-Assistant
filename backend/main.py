@@ -36,6 +36,9 @@ class QuestionRequest(BaseModel):
     userid:str
     history:List[ChatMessage]
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
 
 @app.post("/process-pdf")
 def process_pdf(

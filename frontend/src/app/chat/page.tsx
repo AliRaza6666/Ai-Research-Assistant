@@ -1,7 +1,7 @@
 "use client";
 
 import {User} from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
   FileText,
@@ -15,7 +15,7 @@ import { FaYoutube } from "react-icons/fa";
 import {
   isValidYoutubeUrl,
   isValidWebsiteUrl,
-  isValidPdf
+  
 } from "@/lib/validators";
 
 
@@ -31,6 +31,8 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [input, setInput] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [backendReady, setBackendReady] = useState(false);
+
   
   type Message = {
   id: string;
@@ -165,7 +167,7 @@ async function processWebsite() {
 
     setMessages((prev) => [...prev, userMessage]);
 
-  const history = messages.slice(-10);
+  const history = messages.slice(-20);
 
   try {
     const response = await fetch("http://127.0.0.1:8000/ask", {
@@ -208,6 +210,27 @@ async function processWebsite() {
  
 
 
+    useEffect(() => {
+    async function waitForBackend() {
+        while (true) {
+            try {
+                const response = await fetch(
+                    `http://127.0.0.1:8000/health`
+                );
+
+                if (response.ok) {
+                    setBackendReady(true);
+                    break;
+                }
+            } catch {}
+
+            await new Promise(resolve => setTimeout(resolve, 3000));
+        }
+    }
+
+    waitForBackend();
+}, []);
+
      const [userid] = useState(() => {
 
         let id = sessionStorage.getItem("userid");
@@ -230,8 +253,39 @@ async function processWebsite() {
         return id;
 
     });
+    if (!backendReady) {
+        return (
+            <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white">
+  <div className="w-full max-w-md px-6 text-center">
+    <Bot className="mx-auto mb-6 h-14 w-14 animate-pulse text-blue-600" />
+
+    <h1 className="text-2xl font-bold text-gray-900">
+      Starting AI Server
+    </h1>
+
+    <p className="mt-4 text-gray-600">
+      This portfolio project is hosted on free infrastructure.
+    </p>
+
+    <p className="mt-2 text-gray-600">
+      The first startup may take a few seconds after inactivity.
+    </p>
+
+    <div className="mt-8 h-2 w-full overflow-hidden rounded-full bg-gray-200">
+      <div className="h-full w-1/3 animate-pulse rounded-full bg-blue-600"></div>
+    </div>
+
+    <p className="mt-4 text-sm text-gray-500">
+      Please wait...
+    </p>
+  </div>
+</div>
+        );
+    }
+
 
   return (
+    
     <div className="flex h-screen bg-zinc-950">
 
       {/* ================= Sidebar ================= */}
@@ -636,4 +690,8 @@ async function processWebsite() {
 
     </div>
   );
+}
+
+function setBackendReady(arg0: boolean) {
+  throw new Error("Function not implemented.");
 }
