@@ -28,7 +28,7 @@ from langchain_core.runnables import RunnableLambda
 
 from youtubeContent import load_youtube_content
 load_dotenv()
-
+import uuid
 token = os.getenv("huggingface_api")
 
 
@@ -258,12 +258,17 @@ def create_vectorstore(source, source_type):
 
     chunks = splitter.split_documents(content)
     client=EphemeralClient()
+    collection_name = str(uuid.uuid4())
 
     vectorstore = Chroma.from_documents(
         documents=chunks,
         embedding=embedding_model,
-        client=client
+        client=client,
+        collection_name=collection_name
     )
+    print(vectorstore._collection.name)
+
+    
 
     return vectorstore
   
@@ -345,6 +350,16 @@ def format_history(history):
 
 def create_chain(vectorstore):
 
+    print("Collection Count:", vectorstore._collection.count())
+
+    docs = vectorstore.get()
+
+    print("=" * 80)
+    print("VECTORSTORE CONTENT")
+    print("=" * 80)
+
+    for i, d in enumerate(docs["documents"]):
+        print(f"{i+1}. {d[:200]}")
     retriever = vectorstore.as_retriever(
         search_kwargs={"k": 3}
     )

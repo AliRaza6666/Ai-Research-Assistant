@@ -483,36 +483,7 @@ async function processWebsite() {
        <div className="flex-1 overflow-y-auto px-8 py-8">
   <div className="mx-auto flex max-w-4xl flex-col gap-6">
 
-    {/* Source Processing Banner */}
-
-    {isProcessing && (
-      <div
-        className={`${
-          messages.length > 0
-            ? "sticky top-0 z-10"
-            : ""
-        }`}
-      >
-        <div className="flex items-center gap-4 rounded-2xl border border-blue-500/30 bg-zinc-900/95 px-5 py-4 shadow-lg backdrop-blur">
-          <Loader2
-            size={22}
-            className="animate-spin text-blue-500"
-          />
-
-          <div className="flex-1">
-            <p className="font-semibold text-white">
-              Processing your source...
-            </p>
-
-            <p className="mt-1 text-sm text-zinc-400">
-              Extracting content, creating embeddings, and preparing your knowledge base.
-              This usually takes a few seconds.
-            </p>
-          </div>
-        </div>
-      </div>
-    )}
-
+    
     {/* Messages */}
 
     {messages.map((message) => (
