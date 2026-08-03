@@ -397,17 +397,9 @@ def create_chain(vectorstore):
 
     return chain
 def process_source(source, source_type):
-    print("STEP 1: process_source started")
-
-    vectorstore = create_vectorstore(source, source_type)
-
-    print("STEP 2: vectorstore created")
-
-    chain = create_chain(vectorstore)
-
-    print("STEP 3: chain created")
-
-    return chain
+    
+    print("1")
+    return "dummy"
 
 
 
