@@ -18,7 +18,7 @@ import {
   
 } from "@/lib/validators";
 
-
+const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
 export default function ChatPage() {
   const [sourceType, setSourceType] = useState<
@@ -42,12 +42,32 @@ export default function ChatPage() {
 };
 
   const [messages, setMessages] = useState<Message[]>([]);
-  
+  const [userid, setUserid] = useState("");
 
-  
+  useEffect(() => {
+    if (typeof window === "undefined") return;
 
-  
-async function processYoutubeVedio() {
+    const storedUserid = window.sessionStorage.getItem("userid");
+
+    if (storedUserid) {
+      setUserid(storedUserid);
+      return;
+    }
+
+    const generatedUserid = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString();
+
+    window.sessionStorage.setItem("userid", generatedUserid);
+    setUserid(generatedUserid);
+  }, []);
+
+  async function processYoutubeVedio() {
+    if (!userid) {
+        toast.error("Initializing session. Please try again in a moment.");
+        return;
+    }
+
     if (!isValidYoutubeUrl(youtubeUrl)) {
         toast.error("Please enter a valid YouTube video URL.");
         return;
@@ -57,7 +77,7 @@ async function processYoutubeVedio() {
 
     try {
         const response = await fetch(
-            "http://127.0.0.1:8000/process",
+            `${API_URL}/process`,
             {
                 method: "POST",
                 headers: {
@@ -91,6 +111,11 @@ async function processYoutubeVedio() {
 }
 
 async function processWebsite() {
+     if (!userid) {
+        toast.error("Initializing session. Please try again in a moment.");
+        return;
+     }
+
      if(!isValidWebsiteUrl(websiteUrl)){
         toast.error("Please enter a valid website URL.");
         return;
@@ -98,7 +123,7 @@ async function processWebsite() {
      setIsProcessing(true);
 
      const response=await fetch(
-      "http://127.0.0.1:8000/process",
+      `${API_URL}/process`,
       {
         method:"POST",
         headers:{
@@ -120,43 +145,66 @@ async function processWebsite() {
   }
 
   async function processPdf(file: File) {
-    if (!selectedSource) {
-    toast.error("Please select a PDF file.");
+    if (!userid) {
+    toast.error("Initializing session. Please try again in a moment.");
     return;
 }
+ setSelectedSource(file.name);
+ 
+    
 
 
 
   setIsProcessing(true);
 
-  setSelectedSource(file.name);  
+   
   const formData = new FormData();
 
   formData.append("userid", userid);
   formData.append("file", file);
+ 
+  console.log("API_URL =", API_URL);
+  console.log("Full URL =", `${API_URL}/process-pdf`);
 
-  const response = await fetch(
-    "http://127.0.0.1:8000/process-pdf",
-    {
-      method: "POST",
-      body: formData,
-    }
-  );
 
-  const data = await response.json();
-  console.log(data);
-  setIsProcessing(false);
+
+ try {
+  console.log("Calling:", `${API_URL}/process-pdf`);
+
+  const response = await fetch(`${API_URL}/process-pdf`, {
+    method: "POST",
+    body: formData,
+  });
+
+  console.log("Response:", response.status);
+  alert("API called successfully");
+} catch (err) {
+  console.error("FETCH ERROR:", err);
+  alert(`Fetch failed: ${err}`);
+}
+  
+  // const data = await response.json();
+  // console.log(data);
+  // setIsProcessing(false);
+  alert("PDF processed successfully. You can now ask questions about its content.");
 }
     
 
   async function sendMessage() {
-  setIsLoading(true);
+  if (!userid) {
+    toast.error("Initializing session. Please try again in a moment.");
+    return;
+  }
+
+
   if (!input.trim()) return;
 
   if (!selectedSource) {
+    
     toast.error("Please select a source before asking a question.");
     return;
   }
+  setIsLoading(true);
   setInput("");
 
   const userMessage: Message = {
@@ -170,7 +218,7 @@ async function processWebsite() {
   const history = messages.slice(-20);
 
   try {
-    const response = await fetch("http://127.0.0.1:8000/ask", {
+    const response = await fetch(`${API_URL}/ask`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -215,7 +263,7 @@ async function processWebsite() {
         while (true) {
             try {
                 const response = await fetch(
-                    `http://127.0.0.1:8000/health`
+                    `${API_URL}/health`
                 );
 
                 if (response.ok) {
@@ -231,28 +279,6 @@ async function processWebsite() {
     waitForBackend();
 }, []);
 
-     const [userid] = useState(() => {
-
-        let id = sessionStorage.getItem("userid");
-
-
-        if(!id){
-
-            id = Math.floor(
-                100000 + Math.random() * 900000
-            ).toString();
-
-
-            sessionStorage.setItem(
-                "userid",
-                id
-            );
-        }
-
-
-        return id;
-
-    });
     if (!backendReady) {
         return (
             <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white">
@@ -690,8 +716,4 @@ async function processWebsite() {
 
     </div>
   );
-}
-
-function setBackendReady(arg0: boolean) {
-  throw new Error("Function not implemented.");
 }

@@ -62,20 +62,8 @@ def process_pdf(
 
 @app.post("/process")
 def process(request: SourceRequest):
-    from rag_pipeline import process_source
-    chain = process_source(
-        request.source,
-        request.source_type
-    )
-    
-    chain_store[request.userid] = chain
-
-    
-
-    return {
-        "message":"Source processed successfully"
-    }
-
+    print("Endpoint reached")
+    return {"message": "OK"}
 
 
 @app.post("/ask")
