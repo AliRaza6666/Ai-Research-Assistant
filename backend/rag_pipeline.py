@@ -13,7 +13,7 @@ from playwright.sync_api import sync_playwright
 from bs4 import BeautifulSoup
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.embeddings import HuggingFaceInferenceAPIEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_huggingface import HuggingFaceEndpoint, ChatHuggingFace
 import requests
@@ -252,10 +252,18 @@ embedding_model = None
 
 def get_embedding_model():
     global embedding_model
+
     if embedding_model is None:
-        embedding_model = HuggingFaceEmbeddings(
-            model_name="all-MiniLM-L6-v2"
+        token = (
+            os.getenv("HUGGINGFACEHUB_API_TOKEN")
+            or os.getenv("huggingface_api")
         )
+
+        embedding_model = HuggingFaceInferenceAPIEmbeddings(
+            api_key=token,
+            model_name="sentence-transformers/all-MiniLM-L6-v2",
+        )
+
     return embedding_model
 
 

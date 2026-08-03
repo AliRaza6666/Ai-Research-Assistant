@@ -3,7 +3,10 @@ from pydantic import BaseModel
 
 from fastapi import UploadFile, File, Form
 
+import logging
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
