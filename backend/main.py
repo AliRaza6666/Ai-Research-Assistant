@@ -63,7 +63,7 @@ def process_pdf(
 @app.post("/process")
 def process(request: SourceRequest):
     print("1")
-
+    from rag_pipeline import process_source
     chain = process_source(
         request.source,
         request.source_type
