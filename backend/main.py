@@ -62,9 +62,16 @@ def process_pdf(
 
 @app.post("/process")
 def process(request: SourceRequest):
-    print("Endpoint reached")
-    return {"message": "OK"}
+    print("1")
 
+    chain = process_source(
+        request.source,
+        request.source_type
+    )
+
+    print("2")
+
+    return {"message": "OK"}
 
 @app.post("/ask")
 def ask(request: QuestionRequest):
