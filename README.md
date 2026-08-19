@@ -35,6 +35,12 @@ The project focuses on building a practical AI system while exploring modern RAG
 
 ---
 
+# 🎥 Demo
+
+Watch the project demo on [LinkedIn](https://www.linkedin.com/posts/ali-raza-784b10362_ai-generativeai-rag-ugcPost-7495781901723561985-arUE/?utm_source=social_share_send&utm_medium=member_desktop_web&rcm=ACoAAFo4uVQBsyWceTBIk1-FFsi_VAdmP7SW1VQ).
+
+---
+
 # ✨ Features
 
 - 📄 Chat with PDF documents
@@ -190,6 +196,7 @@ This project intentionally uses free services.
 - Some websites block scraping.
 - OCR for scanned PDFs is not implemented.
 - Only one active knowledge source per user session.
+- The application is not currently hosted because its memory requirements exceed the limits of free hosting providers.
 
 ---
 
