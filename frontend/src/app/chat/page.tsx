@@ -120,10 +120,7 @@ async function processWebsite() {
   }
 
   async function processPdf(file: File) {
-    if (!selectedSource) {
-    toast.error("Please select a PDF file.");
-    return;
-}
+    
 
 
 
@@ -150,7 +147,7 @@ async function processWebsite() {
     
 
   async function sendMessage() {
-  setIsLoading(true);
+  
   if (!input.trim()) return;
 
   if (!selectedSource) {
@@ -158,6 +155,7 @@ async function processWebsite() {
     return;
   }
   setInput("");
+  setIsLoading(true);
 
   const userMessage: Message = {
       id: crypto.randomUUID(),
@@ -231,27 +229,19 @@ async function processWebsite() {
     waitForBackend();
 }, []);
 
-     const [userid] = useState(() => {
-
-        let id = sessionStorage.getItem("userid");
-
-
-        if(!id){
-
-            id = Math.floor(
-                100000 + Math.random() * 900000
-            ).toString();
-
-
-            sessionStorage.setItem(
-                "userid",
-                id
-            );
+    const [userid] = useState(() => {
+        if (typeof window === "undefined") {
+            return "";
         }
 
+        let id = window.sessionStorage.getItem("userid");
+
+        if (!id) {
+            id = Math.floor(100000 + Math.random() * 900000).toString();
+            window.sessionStorage.setItem("userid", id);
+        }
 
         return id;
-
     });
     if (!backendReady) {
         return (
